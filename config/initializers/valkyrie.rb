@@ -4,7 +4,7 @@ Rails.application.config.to_prepare do
   Valkyrie::StorageAdapter.register(
     ConfigurablePathDiskStorageAdapter.new(
       base_path: Figgy.config['repository_path'],
-      unique_identifier: :test_disk,
+      unique_identifier: :disk,
       path_generator: ConfigurablePathDiskStorageAdapter::ContentAddressablePath
     ),
     :disk
