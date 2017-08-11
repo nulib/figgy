@@ -24,7 +24,7 @@ class ScannedResourceChangeSet < Valkyrie::ChangeSet
   # Virtual Attributes
   property :refresh_remote_metadata, virtual: true, multiple: false
   property :files, virtual: true, multiple: true, required: false
-  property :pending_uploads, multiple: true, required: false
+  property :pending_uploads, multiple: true, required: false, default: []
   # Necessary for SimpleForm to show the nested record.
   property :new_workflow_note_attributes, virtual: true
 

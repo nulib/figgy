@@ -16,7 +16,7 @@ class ScannedResourcesController < ApplicationController
   def structure
     @change_set = change_set_class.new(find_resource(params[:id])).prepopulate!
     @logical_order = (Array(@change_set.logical_structure).first || Structure.new).decorate
-    @logical_order = WithProxyForObject.new(@logical_order, query_service.find_members(resource: @change_set.id).to_a)
+    @logical_order = WithProxyForObject.new(@logical_order, query_service.find_members(resource: @change_set.resource).to_a)
     authorize! :structure, @change_set.resource
   end
 
@@ -45,7 +45,7 @@ class ScannedResourcesController < ApplicationController
 
   def selected_files
     @selected_files ||= selected_file_params.values.map do |x|
-      PendingUpload.new(x.symbolize_keys.merge(id: SecureRandom.uuid, created_at: Time.current.utc.iso8601))
+      PendingUpload.new(x.symbolize_keys.merge(id: SecureRandom.uuid, created_at: Time.current.utc.to_datetime))
     end
   end
 

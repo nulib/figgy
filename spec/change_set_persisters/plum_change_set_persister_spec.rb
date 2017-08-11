@@ -168,7 +168,7 @@ RSpec.describe PlumChangeSetPersister do
         change_set_persister.delete(change_set: change_set)
         reloaded = query_service.find_by(id: resource.id)
 
-        expect(reloaded.member_of_collection_ids).to eq []
+        expect(reloaded.member_of_collection_ids).to be_blank
       end
     end
   end

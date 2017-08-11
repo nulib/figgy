@@ -14,7 +14,11 @@ class MemberOfIndexer
 
   def parents
     @parents ||=
-      query_service.find_parents(resource: resource)
+      begin
+        query_service.find_parents(resource: resource)
+      rescue
+        []
+      end
   end
 
   def metadata_adapter

@@ -4,7 +4,7 @@ require 'valkyrie/specs/shared_specs'
 
 RSpec.describe IndexingAdapter do
   let(:adapter) do
-    described_class.new(metadata_adapter: Valkyrie::MetadataAdapter.find(:postgres),
+    described_class.new(metadata_adapter: Valkyrie.config.metadata_adapter,
                         index_adapter: index_solr)
   end
   let(:query_service) { adapter.query_service }

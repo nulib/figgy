@@ -33,7 +33,8 @@ GIT
 
 GIT
   remote: https://github.com/samvera-labs/valkyrie.git
-  revision: 4d37d0a190cb73678caa0f938c19542f049f0244
+  revision: 00b83fb3f78c20f77d214dd883d184b170b13d71
+  branch: raw_fedora_adapter
   specs:
     valkyrie (0.1.0)
       active-fedora

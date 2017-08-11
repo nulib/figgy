@@ -9,7 +9,7 @@ class ScannedResource < Valhalla::Resource
   attribute :imported_metadata, Valkyrie::Types::Set.member(ImportedMetadata).optional
   attribute :state
   attribute :logical_structure, Valkyrie::Types::Array.member(Structure.optional).optional
-  attribute :pending_uploads, Valkyrie::Types::Array.member(PendingUpload)
+  attribute :pending_uploads, Valkyrie::Types::Array.member(PendingUpload).optional
   attribute :workflow_note, Valkyrie::Types::Array.member(WorkflowNote).optional
 
   def to_s

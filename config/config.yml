@@ -1,4 +1,5 @@
 defaults: &defaults
+  fedora_path: "test_fed"
   locations_url: https://bibdata.princeton.edu/locations/digital_locations.json
   derivative_path: <%= Rails.root.join("tmp", "derivatives") %>
   jp2_recipes:
@@ -67,6 +68,7 @@ defaults: &defaults
 
 development:
   <<: *defaults
+  fedora_path: "dev_fed"
 
 test:
   <<: *defaults

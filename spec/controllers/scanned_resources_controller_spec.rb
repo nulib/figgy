@@ -51,14 +51,14 @@ RSpec.describe ScannedResourcesController do
     let(:valid_params) do
       {
         title: ['Title 1', 'Title 2'],
-        rights_statement: 'Test Statement',
+        rights_statement: 'http://rightsstatements.org/vocab/NKC/1.0/',
         visibility: 'restricted'
       }
     end
     let(:invalid_params) do
       {
         title: [""],
-        rights_statement: 'Test Statement',
+        rights_statement: 'http://rightsstatements.org/vocab/NKC/1.0/',
         visibility: 'restricted'
       }
     end
@@ -92,7 +92,7 @@ RSpec.describe ScannedResourcesController do
       let(:valid_params) do
         {
           title: ['Title 1', 'Title 2'],
-          rights_statement: 'Test Statement',
+          rights_statement: 'http://rightsstatements.org/vocab/NKC/1.0/',
           visibility: 'restricted',
           member_of_collection_ids: [collection.id.to_s]
         }
@@ -321,7 +321,7 @@ RSpec.describe ScannedResourcesController do
         reloaded = adapter.query_service.find_by(id: resource.id)
 
         expect(reloaded.member_ids.length).to eq 1
-        expect(reloaded.pending_uploads).to be_empty
+        expect(reloaded.pending_uploads).to be_blank
         expect(Valkyrie::MetadataAdapter.find(:index_solr).persister).not_to have_received(:save)
 
         file_sets = Valkyrie.config.metadata_adapter.query_service.find_members(resource: reloaded)
@@ -339,6 +339,7 @@ RSpec.describe ScannedResourcesController do
         expect(pending_upload.url).to eq ["file://#{file.path}"]
         expect(pending_upload.file_size).to eq [file.size]
         expect(pending_upload.created_at).not_to be_blank
+        expect(pending_upload.created_at.respond_to?(:strftime)).to eq true
       end
     end
   end

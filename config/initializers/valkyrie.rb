@@ -22,6 +22,11 @@ Rails.application.config.to_prepare do
   )
 
   Valkyrie::MetadataAdapter.register(
+    Valkyrie::Persistence::Fedora::MetadataAdapter.new(connection: ::Ldp::Client.new("http://localhost:8988/rest"), base_path: Figgy.config["fedora_path"]),
+    :fedora
+  )
+
+  Valkyrie::MetadataAdapter.register(
     Valkyrie::Persistence::Memory::MetadataAdapter.new,
     :memory
   )
