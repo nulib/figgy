@@ -15,9 +15,10 @@ RSpec.describe PDFGenerator do
       before do
         stub_request(:any, "http://www.example.com/image-service/#{file_set.id}/full/287,200/0/grey.jpg")
           .to_return(body: File.open(Rails.root.join("spec", "fixtures", "files", "derivatives", "grey-landscape-pdf.jpg")), status: 200)
-        file_set.original_file.width = 287
-        file_set.original_file.height = 200
-        persister.save(resource: file_set)
+        original_file = query_service.find_by(id: file_set.original_file.proxy.first)
+        original_file.width = 287
+        original_file.height = 200
+        persister.save(resource: original_file)
       end
       it "renders a PDF" do
         file_node = generator.render

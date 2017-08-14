@@ -102,7 +102,7 @@ class PlumChangeSetPersister
     end
 
     def create_files(change_set:)
-      appender = FileAppender.new(storage_adapter: storage_adapter, persister: persister, files: files(change_set: change_set))
+      appender = FileAppender.new(files: files(change_set: change_set), change_set_persister: self)
       @created_file_sets = appender.append_to(change_set.resource)
     end
 

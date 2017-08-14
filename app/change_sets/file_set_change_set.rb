@@ -8,4 +8,17 @@ class FileSetChangeSet < Valkyrie::ChangeSet
   def primary_terms
     [:title]
   end
+
+  def file_metadata
+    @file_metadata ||=
+      begin
+        resource.file_metadata.map do |proxy|
+          query_service.find_by(id: proxy.proxy.first)
+        end
+      end
+  end
+
+  def query_service
+    Valkyrie.config.metadata_adapter.query_service
+  end
 end

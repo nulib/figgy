@@ -32,6 +32,7 @@ RSpec.describe Jp2DerivativeService do
 
     context 'when given an invalid mime_type' do
       it 'does not validate' do
+        allow(valid_resource).to receive(:derivative_file).and_return([])
         # rubocop:disable RSpec/SubjectStub
         allow(valid_file).to receive(:mime_type).and_return(['image/jpeg'])
         # rubocop:enable RSpec/SubjectStub
@@ -47,6 +48,7 @@ RSpec.describe Jp2DerivativeService do
     derivative = reloaded.derivative_file
 
     expect(derivative).to be_present
+    derivative = query_service.find_by(id: derivative.proxy.first)
     derivative_file = Valkyrie::StorageAdapter.find_by(id: derivative.file_identifiers.first)
     expect(derivative_file.read).not_to be_blank
   end

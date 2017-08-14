@@ -23,7 +23,9 @@ class Valhalla::DownloadsController < ApplicationController
 
   def file_desc
     return unless resource
-    @file_desc ||= resource.file_metadata.find { |m| m.id.to_s == params[:id] }
+    @file_desc ||= query_service.find_by(id: Valkyrie::ID.new(params[:id]))
+  rescue Valkyrie::Persistence::ObjectNotFoundError
+    nil
   end
 
   def binary_file

@@ -279,7 +279,7 @@ class ManifestBuilder
       # Retrieve the File related to the image resource
       # @return [File]
       def file
-        resource.original_file
+        @file ||= query_service.find_by(id: resource.original_file.proxy.first)
       end
 
       ##
@@ -295,6 +295,10 @@ class ManifestBuilder
       # @return [ManifestHelper]
       def helper
         @helper ||= ManifestHelper.new
+      end
+
+      def metadata_adapter
+        Valkyrie.config.metadata_adapter
       end
   end
 

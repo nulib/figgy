@@ -13,7 +13,8 @@ RSpec.describe RiiifResolver do
       it "returns the attached file path" do
         resource = change_set_persister.save(change_set: ScannedResourceChangeSet.new(ScannedResource.new, files: [file]))
         file_set = query_service.find_members(resource: resource).first
-        file = Valkyrie::StorageAdapter.find_by(id: file_set.derivative_file.file_identifiers.first)
+        derivative_file = query_service.find_by(id: file_set.derivative_file.proxy.first)
+        file = Valkyrie::StorageAdapter.find_by(id: derivative_file.file_identifiers.first)
 
         expect(resolver.pattern(file_set.id.to_s)).to eq file.io.path
       end

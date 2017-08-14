@@ -20,7 +20,7 @@ RSpec.describe Valhalla::DownloadsController do
       end
 
       it "serves files that exist" do
-        get :show, params: { resource_id: file_set.id.to_s, id: file_node.id.to_s }
+        get :show, params: { resource_id: file_set.id.to_s, id: file_node.proxy.first.to_s }
         expect(response.body).to eq(sample_file.read)
         expect(response.content_length).to eq(196_882)
         expect(response.content_type).to eq('image/tiff')
@@ -40,7 +40,7 @@ RSpec.describe Valhalla::DownloadsController do
 
     context "when not logged in" do
       it "redirects to login" do
-        get :show, params: { resource_id: file_set.id.to_s, id: file_node.id.to_s }
+        get :show, params: { resource_id: file_set.id.to_s, id: file_node.proxy.first.to_s }
         expect(response).to redirect_to('/users/auth/cas')
       end
     end

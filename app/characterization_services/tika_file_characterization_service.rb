@@ -20,12 +20,12 @@ class TikaFileCharacterizationService
   # @example characterize a file and do not persist the changes
   #   Valkyrie::FileCharacterizationService.for(file_node, persister).characterize(save: false)
   def characterize(save: true)
+    return file_node if file_node.width.present? && file_node.height.present? && file_node.checksum.present? && file_node.mime_type.present?
     result = JSON.parse(json_output).last
     @file_characterization_attributes = { width: result['tiff:ImageWidth'], height: result['tiff:ImageLength'], mime_type: result['Content-Type'], checksum: checksum }
     new_file = original_file.new(@file_characterization_attributes.to_h)
-    @file_node.file_metadata = @file_node.file_metadata.select { |x| x.id != new_file.id } + [new_file]
-    @persister.save(resource: @file_node) if save
-    @file_node
+    @persister.save(resource: new_file) if save
+    new_file
   end
 
   # Provides the SHA256 hexdigest string for the file
@@ -63,7 +63,7 @@ class TikaFileCharacterizationService
   end
 
   def original_file
-    @file_node.original_file
+    @original_file ||= file_node
   end
 
   def valid?

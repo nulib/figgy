@@ -9,11 +9,12 @@ class Jp2DerivativeService
     end
 
     def new(change_set)
+      return Valkyrie::DerivativeService.new(change_set) if change_set.resource.derivative_file.present?
       Jp2DerivativeService.new(change_set: change_set, change_set_persister: change_set_persister, original_file: original_file(change_set.resource))
     end
 
     def original_file(resource)
-      resource.original_file
+      query_service.find_by(id: resource.original_file.proxy.first)
     end
   end
 

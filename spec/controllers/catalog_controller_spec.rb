@@ -190,13 +190,15 @@ RSpec.describe CatalogController do
         expect(response).to be_success
       end
 
+      let(:file) { fixture_file_upload('files/example.tif', 'image/tiff') }
       it "renders for a FileSet" do
-        resource = persister.save(resource: FactoryGirl.build(:file_set))
+        resource = persister.save(resource: FactoryGirl.create_for_repository(:scanned_resource, files: [file]))
 
-        get :show, params: { id: "id-#{resource.id}" }
+        get :show, params: { id: "id-#{resource.member_ids.first}" }
 
-        expect(response.body).to have_link "Edit This File Set", href: edit_file_set_path(resource)
-        expect(response.body).to have_link "Delete This File Set", href: file_set_path(resource)
+        expect(response.body).to have_link "Edit This File Set", href: edit_file_set_path(id: resource.member_ids.first)
+        expect(response.body).to have_link "Delete This File Set", href: file_set_path(id: resource.member_ids.first)
+        expect(response.body).to have_link "Download"
         expect(response.body).not_to have_link "File Manager"
       end
 

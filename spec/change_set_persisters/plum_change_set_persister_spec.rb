@@ -134,9 +134,11 @@ RSpec.describe PlumChangeSetPersister do
 
       file_metadata_nodes = members.first.file_metadata
       expect(file_metadata_nodes.to_a.length).to eq 2
-      expect(file_metadata_nodes.first).to be_kind_of FileMetadata
+      expect(file_metadata_nodes.first).to be_kind_of FileMetadataProxy
 
       original_file_node = file_metadata_nodes.find { |x| x.use == [Valkyrie::Vocab::PCDMUse.OriginalFile] }
+      expect(original_file_node.proxy).not_to be_blank
+      original_file_node = query_service.find_by(id: original_file_node.proxy.first)
 
       expect(original_file_node.file_identifiers.length).to eq 1
       expect(original_file_node.width).to eq ["200"]
@@ -150,13 +152,15 @@ RSpec.describe PlumChangeSetPersister do
       expect(original_file).to respond_to(:read)
 
       derivative_file_node = file_metadata_nodes.find { |x| x.use == [Valkyrie::Vocab::PCDMUse.ServiceFile] }
+      expect(derivative_file_node.proxy).not_to be_blank
+      derivative_file_node = query_service.find_by(id: derivative_file_node.proxy.first)
 
       expect(derivative_file_node).not_to be_blank
       derivative_file = Valkyrie::StorageAdapter.find_by(id: derivative_file_node.file_identifiers.first)
       expect(derivative_file).not_to be_blank
       expect(derivative_file.io.path).to start_with(Rails.root.join("tmp", "derivatives").to_s)
 
-      expect(query_service.find_all.to_a.map(&:class)).to contain_exactly ScannedResource, FileSet
+      expect(query_service.find_all.to_a.map(&:class)).to contain_exactly ScannedResource, FileSet, FileMetadata, FileMetadata
     end
   end
   describe "updating files" do
@@ -169,16 +173,16 @@ RSpec.describe PlumChangeSetPersister do
       change_set.files = [file1]
       output = change_set_persister.save(change_set: change_set)
       file_set = query_service.find_members(resource: output).first
-      file_node = file_set.file_metadata.find { |x| x.use == [Valkyrie::Vocab::PCDMUse.OriginalFile] }
+      file_node = file_set.original_file
       file = storage_adapter.find_by(id: file_node.file_identifiers.first)
       expect(file.size).to eq 196_882
 
       # update the file
       change_set = FileSetChangeSet.new(file_set)
-      change_set.files = [{ file_node.id.to_s => file2 }]
+      change_set.files = [{ file_node.proxy.first.to_s => file2 }]
       change_set_persister.save(change_set: change_set)
       updated_file_set = query_service.find_by(id: file_set.id)
-      updated_file_node = updated_file_set.file_metadata.find { |x| x.id == file_node.id }
+      updated_file_node = updated_file_set.original_file
       updated_file = storage_adapter.find_by(id: updated_file_node.file_identifiers.first)
       expect(updated_file.size).to eq 5600
     end

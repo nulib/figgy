@@ -7,7 +7,7 @@
        <th>Download</th>
        <th>Update</th>
       </tr>
-      <% resource.file_metadata.each do |file| %>
+      <% f.object.file_metadata.each do |file| %>
         <tr>
           <td><%= file.label.first %></td>
           <td><%= link_to "Download", valhalla.download_path(resource.id, file.id) %></td>
