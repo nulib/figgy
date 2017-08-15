@@ -74,11 +74,12 @@ class FileAppender
   end
 
   def create_node(file)
-    node = FileMetadata.for(file: file) # .new(id: SecureRandom.uuid)
-    file = storage_adapter.upload(file: file, resource: node)
-    existing_node = query_service.find_inverse_references_by(resource: file, property: :file_identifiers).first
+    node = FileMetadata.for(file: file)
+    uploaded_file = storage_adapter.upload(file: file, resource: node)
+    existing_node = query_service.find_inverse_references_by(resource: uploaded_file, property: :file_identifiers).first
     return existing_node if existing_node.present?
-    node.file_identifiers = node.file_identifiers + [file.id]
+    node.file_identifiers = node.file_identifiers + [uploaded_file.id]
+    node.source_file_node = file.try(:source_file_node)
     persister.save(resource: node)
   end
 

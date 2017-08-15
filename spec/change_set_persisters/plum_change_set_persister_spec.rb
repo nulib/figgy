@@ -121,6 +121,8 @@ RSpec.describe PlumChangeSetPersister do
   describe "uploading files" do
     let(:file) { fixture_file_upload('files/example.tif', 'image/tiff') }
     it "can append files as FileSets", run_real_derivatives: true do
+      FactoryGirl.create_for_repository(:scanned_resource, files: [file])
+      allow(Hydra::Derivatives::Jpeg2kImageDerivatives).to receive(:create).and_call_original
       resource = FactoryGirl.build(:scanned_resource)
       change_set = change_set_class.new(resource)
       change_set.files = [file]
@@ -156,11 +158,13 @@ RSpec.describe PlumChangeSetPersister do
       derivative_file_node = query_service.find_by(id: derivative_file_node.proxy.first)
 
       expect(derivative_file_node).not_to be_blank
+      expect(derivative_file_node.source_file_node).to eq [original_file_node.id]
       derivative_file = Valkyrie::StorageAdapter.find_by(id: derivative_file_node.file_identifiers.first)
       expect(derivative_file).not_to be_blank
       expect(derivative_file.io.path).to start_with(Rails.root.join("tmp", "derivatives").to_s)
 
-      expect(query_service.find_all.to_a.map(&:class)).to contain_exactly ScannedResource, FileSet, FileMetadata, FileMetadata
+      expect(query_service.find_all.to_a.map(&:class)).to contain_exactly ScannedResource, FileSet, FileMetadata, FileMetadata, ScannedResource, FileSet
+      expect(Hydra::Derivatives::Jpeg2kImageDerivatives).not_to have_received(:create)
     end
   end
   describe "updating files" do
