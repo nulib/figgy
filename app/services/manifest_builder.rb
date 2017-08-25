@@ -341,7 +341,7 @@ class ManifestBuilder
       file_set = query_service.find_by(id: Valkyrie::ID.new(id))
       file_metadata = file_set.derivative_file
       Pathname.new(Figgy.config['cantaloupe_url']).join(
-        CGI.escape("#{file_metadata.id}/intermediate_file.jp2")
+                   CGI.escape("#{file_metadata.proxy.first}/intermediate_file.jp2")
       ).to_s
     end
 
