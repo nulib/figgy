@@ -77,7 +77,7 @@ class ManifestBuilder
     # Helper method for generating the URL to the resource manifest
     # @return [String]
     def manifest_url
-      helper.polymorphic_url([:manifest, resource])
+      @manifest_url ||= helper.polymorphic_url([:manifest, resource])
     end
 
     ##
