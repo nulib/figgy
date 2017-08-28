@@ -6,6 +6,7 @@ class FileSet < Valhalla::Resource
   attribute :file_metadata, Valkyrie::Types::Set.member(FileMetadata.optional)
   attribute :viewing_hint
   attribute :depositor
+  attribute :replaces
 
   def thumbnail_id
     id

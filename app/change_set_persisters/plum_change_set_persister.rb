@@ -1,11 +1,13 @@
 # frozen_string_literal: true
 class PlumChangeSetPersister
-  attr_reader :metadata_adapter, :storage_adapter, :created_file_sets
+  attr_reader :metadata_adapter, :storage_adapter, :created_file_sets, :file_appender
   delegate :persister, :query_service, to: :metadata_adapter
-  def initialize(metadata_adapter:, storage_adapter:, transaction: false)
+  def initialize(metadata_adapter:, storage_adapter:, transaction: false, file_appender: FileAppender, characterize: true)
     @metadata_adapter = metadata_adapter
     @storage_adapter = storage_adapter
     @transaction = transaction
+    @file_appender = file_appender
+    @characterize = characterize
   end
 
   def save(change_set:)
@@ -43,8 +45,12 @@ class PlumChangeSetPersister
     @transaction
   end
 
+  def characterize?
+    @characterize
+  end
+
   def with(metadata_adapter:)
-    yield self.class.new(metadata_adapter: metadata_adapter, storage_adapter: storage_adapter, transaction: true)
+    yield self.class.new(metadata_adapter: metadata_adapter, storage_adapter: storage_adapter, transaction: true, file_appender: file_appender, characterize: @characterize)
   end
 
   private
@@ -102,14 +108,14 @@ class PlumChangeSetPersister
     end
 
     def create_files(change_set:)
-      appender = FileAppender.new(storage_adapter: storage_adapter, persister: persister, files: files(change_set: change_set))
+      appender = file_appender.new(storage_adapter: storage_adapter, persister: persister, files: files(change_set: change_set))
       @created_file_sets = appender.append_to(change_set.resource)
     end
 
     def after_commit
       return unless @created_file_sets
       @created_file_sets.each do |file_set|
-        next unless file_set.instance_of?(FileSet)
+        next unless file_set.instance_of?(FileSet) && characterize?
         CharacterizationJob.perform_later(file_set.id.to_s)
       end
     end
