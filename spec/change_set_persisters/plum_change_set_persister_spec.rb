@@ -245,6 +245,45 @@ RSpec.describe PlumChangeSetPersister do
         expect(change_set.model.read_groups).to eq []
       end
     end
+
+    context "with member resources and file sets" do
+      let(:resource1) { FactoryGirl.create_for_repository(:file_set) }
+      let(:resource2) { FactoryGirl.create_for_repository(:complete_private_scanned_resource) }
+      it "propagates the access control policies" do
+        resource = FactoryGirl.build(:scanned_resource, read_groups: [])
+        resource.member_ids = [resource1.id, resource2.id]
+        adapter = Valkyrie::MetadataAdapter.find(:indexing_persister)
+        resource = adapter.persister.save(resource: resource)
+
+        change_set = change_set_class.new(resource)
+        change_set.validate(visibility: Hydra::AccessControls::AccessRight::PERMISSION_TEXT_VALUE_PUBLIC)
+        change_set.sync
+
+        output = change_set_persister.save(change_set: change_set)
+        members = query_service.find_members(resource: output)
+        expect(members.first.read_groups).to eq [Hydra::AccessControls::AccessRight::PERMISSION_TEXT_VALUE_PUBLIC]
+        expect(members.to_a.last.read_groups).to eq [Hydra::AccessControls::AccessRight::PERMISSION_TEXT_VALUE_PUBLIC]
+      end
+    end
+  end
+
+  describe "setting state" do
+    context "with member resources and file sets" do
+      let(:resource2) { FactoryGirl.create_for_repository(:complete_private_scanned_resource) }
+      it "propagates the workflow state" do
+        resource = FactoryGirl.build(:scanned_resource, read_groups: [], state: 'open')
+        resource.member_ids = [resource2.id]
+        adapter = Valkyrie::MetadataAdapter.find(:indexing_persister)
+        resource = adapter.persister.save(resource: resource)
+
+        change_set = change_set_class.new(resource)
+        change_set.sync
+
+        output = change_set_persister.save(change_set: change_set)
+        members = query_service.find_members(resource: output)
+        expect(members.first.state).to eq ['open']
+      end
+    end
   end
 
   describe "appending" do
