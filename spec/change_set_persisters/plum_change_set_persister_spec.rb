@@ -246,7 +246,7 @@ RSpec.describe PlumChangeSetPersister do
       end
     end
 
-    context "with member resources and file sets" do
+    context "with existing member resources and file sets" do
       let(:resource1) { FactoryGirl.create_for_repository(:file_set) }
       let(:resource2) { FactoryGirl.create_for_repository(:complete_private_scanned_resource) }
       it "propagates the access control policies" do
@@ -259,8 +259,8 @@ RSpec.describe PlumChangeSetPersister do
         change_set.validate(visibility: Hydra::AccessControls::AccessRight::PERMISSION_TEXT_VALUE_PUBLIC)
         change_set.sync
 
-        output = change_set_persister.save(change_set: change_set)
-        members = query_service.find_members(resource: output)
+        updated = change_set_persister.save(change_set: change_set)
+        members = query_service.find_members(resource: updated)
         expect(members.first.read_groups).to eq [Hydra::AccessControls::AccessRight::PERMISSION_TEXT_VALUE_PUBLIC]
         expect(members.to_a.last.read_groups).to eq [Hydra::AccessControls::AccessRight::PERMISSION_TEXT_VALUE_PUBLIC]
       end
@@ -277,6 +277,7 @@ RSpec.describe PlumChangeSetPersister do
         resource = adapter.persister.save(resource: resource)
 
         change_set = change_set_class.new(resource)
+        change_set.validate(state: 'open')
         change_set.sync
 
         output = change_set_persister.save(change_set: change_set)
@@ -300,6 +301,30 @@ RSpec.describe PlumChangeSetPersister do
       expect(reloaded.thumbnail_id).to eq [output.id]
       solr_record = Blacklight.default_index.connection.get("select", params: { qt: "document", q: "id:id-#{output.id}" })["response"]["docs"][0]
       expect(solr_record["member_of_ssim"]).to eq ["id-#{parent.id}"]
+    end
+  end
+
+  describe 'propagating visibility and state' do
+    let(:persister) { instance_double(described_class) }
+    let(:resource1) { FactoryGirl.create_for_repository(:file_set) }
+    let(:resource2) { FactoryGirl.create_for_repository(:complete_private_scanned_resource) }
+    before do
+      allow(persister).to receive(:save)
+      allow(persister).to receive(:members)
+    end
+    context "when visibility and state haven't been updated" do
+      it "propagates the access control policies" do
+        resource = FactoryGirl.build(:scanned_resource, read_groups: [])
+        resource.member_ids = [resource1.id, resource2.id]
+        adapter = Valkyrie::MetadataAdapter.find(:indexing_persister)
+        resource = adapter.persister.save(resource: resource)
+
+        change_set = change_set_class.new(resource)
+        change_set.sync
+
+        expect(persister).not_to have_received(:members)
+        persister.save(change_set: change_set)
+      end
     end
   end
 end

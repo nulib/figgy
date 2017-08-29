@@ -53,7 +53,7 @@ class PlumChangeSetPersister
       apply_remote_metadata(change_set: change_set)
       create_files(change_set: change_set)
 
-      return if !change_set.respond_to?(:read_groups) && !change_set.respond_to?(:state)
+      return if !change_set.changed?(:visibility) && !change_set.changed?(:state)
       members(change_set: change_set).each do |member|
         member.read_groups = change_set.read_groups if change_set.read_groups
         member.state = change_set.state if change_set.state && member.respond_to?(:state)
